@@ -1,0 +1,33 @@
+# Secrets - NEVER commit
+.env
+.env.local
+*.key
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data caches (regenerable, don't bloat the repo)
+data/cache/
+data/news/*.json
+*.sqlite
+*.db
+
+# FIA regulation PDFs (not used by the deployed app yet; re-add when RAG ships)
+data/regs/*.pdf
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# LanceDB
+*.lance/
