@@ -12,6 +12,7 @@ import pandas as pd
 import streamlit as st
 
 import jolpica as j
+import laps as lp
 
 st.set_page_config(page_title="F1 Race Results", layout="wide")
 st.title("F1 Race Results")
@@ -116,9 +117,70 @@ st.caption(
     f"{circ.get('circuitName', '')} — {loc.get('locality', '')}, {loc.get('country', '')}  ·  {race.get('date', '')}"
 )
 
-tab_race, tab_quali, tab_sprint, tab_standings = st.tabs(
-    ["Race", "Qualifying", "Sprint", "Standings"]
-)
+HAS_LAPS = year >= 2018
+if HAS_LAPS:
+    (
+        tab_race,
+        tab_quali,
+        tab_sprint,
+        tab_standings,
+        tab_practice_laps,
+        tab_quali_laps,
+        tab_race_laps,
+    ) = st.tabs(
+        [
+            "Race",
+            "Qualifying",
+            "Sprint",
+            "Standings",
+            "Practice laps",
+            "Quali laps",
+            "Race laps",
+        ]
+    )
+else:
+    tab_race, tab_quali, tab_sprint, tab_standings = st.tabs(
+        ["Race", "Qualifying", "Sprint", "Standings"]
+    )
+    tab_practice_laps = tab_quali_laps = tab_race_laps = None
+
+
+def _render_session_laps(year_: int, rnd_: int, codes: list[str]) -> None:
+    """Pick a session code (if multiple), then render chart + fastest-lap table."""
+    available = [c for c in codes if c in lp.available_codes(year_, rnd_)]
+    if not available:
+        st.info(
+            "No lap data ingested for this session yet. From the project root run:\n\n"
+            f"`python src/ingest_laps.py {year_} {rnd_}`"
+        )
+        return
+
+    if len(available) == 1:
+        code = available[0]
+        st.caption(lp.CODE_LABELS[code])
+    else:
+        code = st.radio(
+            "Session",
+            available,
+            format_func=lambda c: lp.CODE_LABELS[c],
+            horizontal=True,
+            key=f"laps_{year_}_{rnd_}_{'_'.join(codes)}",
+        )
+
+    df = lp.load_laps(year_, rnd_, code)
+    if df is None or df.empty:
+        st.info("Parquet file is empty.")
+        return
+
+    pivot = lp.chart_pivot(df)
+    if not pivot.empty:
+        st.markdown("**Lap times** (seconds)")
+        st.line_chart(pivot, height=420)
+
+    fastest = lp.fastest_per_driver(df)
+    if not fastest.empty:
+        st.markdown("**Fastest lap per driver**")
+        st.dataframe(fastest, hide_index=True, width="stretch")
 
 with tab_race:
     if is_future:
@@ -213,3 +275,22 @@ with tab_standings:
                     for s in cs
                 ]
                 st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+
+if HAS_LAPS:
+    with tab_practice_laps:
+        if is_future:
+            st.info(future_msg)
+        else:
+            _render_session_laps(year, rnd, ["FP1", "FP2", "FP3"])
+
+    with tab_quali_laps:
+        if is_future:
+            st.info(future_msg)
+        else:
+            _render_session_laps(year, rnd, ["Q", "SQ", "SS"])
+
+    with tab_race_laps:
+        if is_future:
+            st.info(future_msg)
+        else:
+            _render_session_laps(year, rnd, ["R", "S"])
