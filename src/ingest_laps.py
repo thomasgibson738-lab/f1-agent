@@ -70,12 +70,13 @@ def ingest_session(year: int, rnd: int, session_num: int, code: str, *, force: b
     try:
         session = fastf1.get_session(year, rnd, session_num)
         session.load(laps=True, telemetry=False, weather=False, messages=False)
-    except Exception as e:  # noqa: BLE001  FastF1 raises a zoo of errors
+        laps = session.laps
+    except Exception as e:  # noqa: BLE001  FastF1 raises a zoo of errors (including DataNotLoadedError when load() silently fails)
         print(f"    {code}: load failed ({type(e).__name__}: {e})")
         return "error"
 
-    laps = session.laps
     if laps is None or laps.empty:
+        print(f"    {code}: empty")
         return "empty"
 
     cols = [c for c in KEEP_COLS if c in laps.columns]
