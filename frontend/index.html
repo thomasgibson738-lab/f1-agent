@@ -4,35 +4,50 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>F1 Race Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
 <body>
-  <header>
-    <h1>F1 Race Results</h1>
+  <!-- Top brand bar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">F1</span>
+      <span class="brand-text">RACE&nbsp;CENTER</span>
+    </div>
+
+    <!-- Inline season / round selectors (broadcast-style control strip) -->
+    <div class="controls">
+      <div class="control">
+        <label for="season">SEASON</label>
+        <select id="season"></select>
+      </div>
+      <div class="control control-wide">
+        <label for="round">ROUND</label>
+        <select id="round"></select>
+      </div>
+    </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <h2>Browse</h2>
-      <label for="season">Season</label>
-      <select id="season"></select>
+  <!-- Race hero band -->
+  <section class="hero">
+    <div class="hero-accent"></div>
+    <div class="hero-body">
+      <p class="hero-kicker" id="hero-kicker">—</p>
+      <h1 id="race-title">Loading…</h1>
+      <p id="race-meta" class="hero-meta"></p>
+    </div>
+  </section>
 
-      <label for="round">Round</label>
-      <select id="round"></select>
-    </aside>
-
-    <main>
-      <div id="race-header">
-        <h2 id="race-title">Loading…</h2>
-        <p id="race-meta" class="meta"></p>
-      </div>
-
-      <nav class="tabs" id="tabs"></nav>
-
-      <section id="panel"></section>
-    </main>
-  </div>
+  <main>
+    <nav class="tabs" id="tabs"></nav>
+    <section id="panel" class="panel"></section>
+  </main>
 
   <footer>
     <span id="api-status"></span>

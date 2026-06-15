@@ -1,5 +1,12 @@
 "use strict";
 
+// Chart.js theme so axes/legend are legible on the dark cards.
+if (window.Chart) {
+  Chart.defaults.color = "#9aa4b2";
+  Chart.defaults.borderColor = "rgba(255,255,255,0.06)";
+  Chart.defaults.font.family = "'Titillium Web', sans-serif";
+}
+
 // --- tiny fetch helper -------------------------------------------------
 async function api(path) {
   const res = await fetch(`${API_BASE}${path}`);
@@ -37,18 +44,23 @@ const LAP_TABS = [
 function table(rows, columns) {
   if (!rows || rows.length === 0) return null;
   const cols = columns || Object.keys(rows[0]);
+  // Podium highlighting only when the first column is a finishing position.
+  const rankCol = cols[0] === "Pos" ? "Pos" : null;
   const t = document.createElement("table");
   t.innerHTML =
     "<thead><tr>" +
     cols.map((c) => `<th>${c}</th>`).join("") +
     "</tr></thead><tbody>" +
     rows
-      .map(
-        (r) =>
-          "<tr>" +
+      .map((r) => {
+        const rank = rankCol ? String(r[rankCol]).trim() : "";
+        const cls = ["1", "2", "3"].includes(rank) ? ` class="pos-${rank}"` : "";
+        return (
+          `<tr${cls}>` +
           cols.map((c) => `<td>${r[c] ?? ""}</td>`).join("") +
           "</tr>"
-      )
+        );
+      })
       .join("") +
     "</tbody>";
   return t;
@@ -274,7 +286,9 @@ async function showTab() {
 // --- selection wiring --------------------------------------------------
 function selectRound() {
   current = schedule[roundSel.value];
-  $("race-title").textContent = `${seasonSel.value} ${current.raceName} — Round ${current.round}`;
+  $("hero-kicker").textContent =
+    `${seasonSel.value} season · Round ${current.round}${current.country ? " · " + current.country : ""}`;
+  $("race-title").textContent = current.raceName;
   $("race-meta").textContent =
     `${current.circuitName} — ${current.locality}, ${current.country} · ${current.date}`;
   buildTabs();
