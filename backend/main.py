@@ -25,6 +25,7 @@ sys.path.insert(0, str(SRC))
 
 import jolpica as j  # noqa: E402
 import laps as lp  # noqa: E402
+import news as nw  # noqa: E402
 
 app = FastAPI(title="F1 Agent API", version="0.1")
 
@@ -63,6 +64,13 @@ def _classification_rows(results: list[dict]) -> list[dict]:
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/api/news")
+def news(limit: int = 40) -> dict:
+    """Latest F1 news digest. Refreshes lazily when the cache is stale,
+    so it's fresh each morning the page is opened."""
+    return nw.get_news(limit=limit)
 
 
 @app.get("/api/seasons")

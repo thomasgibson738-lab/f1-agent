@@ -21,8 +21,14 @@
       <span class="brand-text">RACE&nbsp;CENTER</span>
     </div>
 
+    <!-- Top-level page nav -->
+    <nav class="pagenav" id="pagenav">
+      <button data-page="results" class="active">Results</button>
+      <button data-page="news">News</button>
+    </nav>
+
     <!-- Inline season / round selectors (broadcast-style control strip) -->
-    <div class="controls">
+    <div class="controls" id="results-controls">
       <div class="control">
         <label for="season">SEASON</label>
         <select id="season"></select>
@@ -34,20 +40,37 @@
     </div>
   </header>
 
-  <!-- Race hero band -->
-  <section class="hero">
-    <div class="hero-accent"></div>
-    <div class="hero-body">
-      <p class="hero-kicker" id="hero-kicker">—</p>
-      <h1 id="race-title">Loading…</h1>
-      <p id="race-meta" class="hero-meta"></p>
-    </div>
-  </section>
+  <!-- ===== Results page ===== -->
+  <div id="page-results">
+    <section class="hero">
+      <div class="hero-accent"></div>
+      <div class="hero-body">
+        <p class="hero-kicker" id="hero-kicker">—</p>
+        <h1 id="race-title">Loading…</h1>
+        <p id="race-meta" class="hero-meta"></p>
+      </div>
+    </section>
 
-  <main>
-    <nav class="tabs" id="tabs"></nav>
-    <section id="panel" class="panel"></section>
-  </main>
+    <main>
+      <nav class="tabs" id="tabs"></nav>
+      <section id="panel" class="panel"></section>
+    </main>
+  </div>
+
+  <!-- ===== News page ===== -->
+  <div id="page-news" hidden>
+    <section class="hero">
+      <div class="hero-accent"></div>
+      <div class="hero-body">
+        <p class="hero-kicker">Daily digest</p>
+        <h1>Latest F1 News</h1>
+        <p id="news-updated" class="hero-meta"></p>
+      </div>
+    </section>
+    <main>
+      <section id="news-list" class="news-list"></section>
+    </main>
+  </div>
 
   <footer>
     <span id="api-status"></span>

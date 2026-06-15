@@ -5,4 +5,5 @@ uvicorn[standard]>=0.30
 pandas>=2.3
 requests>=2.32
 requests-cache>=1.3
+feedparser>=6.0
 pyarrow>=15

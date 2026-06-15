@@ -67,6 +67,25 @@ body {
   color: var(--text);
 }
 
+/* Top-level page nav (Results / News) */
+.pagenav { display: flex; gap: 4px; }
+.pagenav button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 8px 4px;
+  margin: 0 10px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.pagenav button:hover { color: var(--text); }
+.pagenav button.active { color: #fff; border-bottom-color: var(--red); }
+
 .controls { display: flex; gap: 14px; flex-wrap: wrap; }
 .control { display: flex; flex-direction: column; gap: 4px; }
 .control label {
@@ -291,6 +310,59 @@ canvas { max-width: 100%; padding: 14px; }
   border-radius: 12px;
   padding: 22px;
   text-align: center;
+}
+
+/* ---------- News page ---------- */
+.news-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.news-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.news-card:hover {
+  transform: translateY(-2px);
+  border-color: #3a4150;
+  border-left-color: var(--red-bright);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+}
+.news-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.news-source { color: var(--red-bright); }
+.news-time { color: var(--faint); }
+.news-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  line-height: 1.25;
+}
+.news-summary {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.45;
 }
 
 /* ---------- Footer ---------- */

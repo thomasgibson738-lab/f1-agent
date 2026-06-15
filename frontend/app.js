@@ -337,6 +337,83 @@ async function boot() {
   }
 }
 
+// --- News page ---------------------------------------------------------
+let newsLoaded = false;
+
+function timeAgo(iso) {
+  if (!iso) return "";
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 3600) return `${Math.max(1, Math.round(diff / 60))}m ago`;
+  if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
+  return `${Math.round(diff / 86400)}d ago`;
+}
+
+async function loadNews(force = false) {
+  if (newsLoaded && !force) return;
+  const list = $("news-list");
+  list.innerHTML = "";
+  list.append(info("Loading latest F1 news…"));
+  try {
+    const data = await api("/api/news");
+    list.innerHTML = "";
+    if (!data.items || data.items.length === 0) {
+      list.append(info("No news available right now."));
+    } else {
+      data.items.forEach((it) => list.append(newsCard(it)));
+    }
+    $("news-updated").textContent = data.fetchedAt
+      ? `Updated ${timeAgo(data.fetchedAt)} · refreshes through the morning`
+      : "";
+    newsLoaded = true;
+  } catch (e) {
+    list.innerHTML = "";
+    list.append(info(`Couldn't load news: ${e.message}`));
+  }
+}
+
+function newsCard(it) {
+  const a = document.createElement("a");
+  a.className = "news-card";
+  a.href = it.link;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+
+  const meta = document.createElement("div");
+  meta.className = "news-meta";
+  meta.innerHTML =
+    `<span class="news-source">${it.source}</span>` +
+    (it.published ? `<span class="news-time">${timeAgo(it.published)}</span>` : "");
+
+  const h = document.createElement("h3");
+  h.className = "news-title";
+  h.textContent = it.title;
+
+  a.append(meta, h);
+  if (it.summary) {
+    const p = document.createElement("p");
+    p.className = "news-summary";
+    p.textContent = it.summary;
+    a.append(p);
+  }
+  return a;
+}
+
+// --- top-level page switching -----------------------------------------
+function showPage(page) {
+  $("page-results").hidden = page !== "results";
+  $("page-news").hidden = page !== "news";
+  // Season/round controls only make sense on the results page.
+  $("results-controls").style.display = page === "results" ? "" : "none";
+  document
+    .querySelectorAll("#pagenav button")
+    .forEach((b) => b.classList.toggle("active", b.dataset.page === page));
+  if (page === "news") loadNews();
+}
+
+document.querySelectorAll("#pagenav button").forEach((b) => {
+  b.addEventListener("click", () => showPage(b.dataset.page));
+});
+
 seasonSel.addEventListener("change", () => loadSeason(seasonSel.value));
 roundSel.addEventListener("change", selectRound);
 boot();
