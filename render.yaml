@@ -1,0 +1,13 @@
+# Render Blueprint — auto-deploys the FastAPI backend on every push to
+# GitHub once the repo is connected (Render dashboard → New → Blueprint,
+# one-time). After that you never touch Render: git push = redeploy.
+services:
+  - type: web
+    name: f1-agent-api
+    runtime: python
+    plan: free # 512 MB RAM, sleeps after 15 min idle; bump to "starter" ($7/mo) if needed
+    buildCommand: pip install -r backend/requirements.txt
+    # Run from repo root so jolpica/laps relative paths (data/cache, data/laps) resolve.
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    healthCheckPath: /api/health

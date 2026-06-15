@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F1 Race Results</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+  <header>
+    <h1>F1 Race Results</h1>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Browse</h2>
+      <label for="season">Season</label>
+      <select id="season"></select>
+
+      <label for="round">Round</label>
+      <select id="round"></select>
+    </aside>
+
+    <main>
+      <div id="race-header">
+        <h2 id="race-title">Loading…</h2>
+        <p id="race-meta" class="meta"></p>
+      </div>
+
+      <nav class="tabs" id="tabs"></nav>
+
+      <section id="panel"></section>
+    </main>
+  </div>
+
+  <footer>
+    <span id="api-status"></span>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

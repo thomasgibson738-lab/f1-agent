@@ -1,0 +1,14 @@
+# Netlify config — serves the static frontend/ directory. Once the repo is
+# connected (Netlify dashboard → Add new site → Import from GitHub, one-time),
+# every push to GitHub redeploys automatically. No build step: it's plain
+# HTML/CSS/JS, so Netlify just publishes the folder.
+[build]
+  publish = "frontend"
+  command = ""
+
+# SPA-style fallback isn't needed (single page), but redirect bare paths
+# to index.html for safety.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
