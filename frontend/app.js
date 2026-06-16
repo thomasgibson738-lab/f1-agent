@@ -2,8 +2,8 @@
 
 // Chart.js theme so axes/legend are legible on the dark cards.
 if (window.Chart) {
-  Chart.defaults.color = "#9aa4b2";
-  Chart.defaults.borderColor = "rgba(255,255,255,0.06)";
+  Chart.defaults.color = "#6b7280";
+  Chart.defaults.borderColor = "rgba(20,22,26,0.08)";
   Chart.defaults.font.family = "'Titillium Web', sans-serif";
 }
 
@@ -29,37 +29,99 @@ let lapChart = null; // Chart.js instance, destroyed on tab switch
 
 // Tabs available depending on whether the season has lap data (2018+).
 const BASE_TABS = [
-  { id: "race", label: "Race" },
-  { id: "quali", label: "Qualifying" },
-  { id: "sprint", label: "Sprint" },
-  { id: "standings", label: "Standings" },
+  { id: "race", label: "Race", icon: "🏆" },
+  { id: "quali", label: "Qualifying", icon: "⏱" },
+  { id: "sprint", label: "Sprint", icon: "🏃" },
+  { id: "standings", label: "Standings", icon: "📊" },
 ];
 const LAP_TABS = [
-  { id: "practice-laps", label: "Practice laps" },
-  { id: "quali-laps", label: "Quali laps" },
-  { id: "race-laps", label: "Race laps" },
+  { id: "practice-laps", label: "Practice laps", icon: "🛞" },
+  { id: "quali-laps", label: "Quali laps", icon: "⏱" },
+  { id: "race-laps", label: "Race laps", icon: "🏁" },
 ];
 
 // --- rendering helpers -------------------------------------------------
+
+// Team accent colors keyed by constructor name (substring match, so
+// "Red Bull Racing" and "Red Bull" both resolve). Fallback is grey.
+const TEAM_COLORS = [
+  [/red bull|^rb |racing bulls|alphatauri|toro rosso/i, "#3671c6"],
+  [/ferrari/i, "#e8002d"],
+  [/mercedes/i, "#27f4d2"],
+  [/mclaren/i, "#ff8000"],
+  [/aston/i, "#229971"],
+  [/alpine/i, "#0093cc"],
+  [/williams/i, "#64c4ff"],
+  [/haas/i, "#b6babd"],
+  [/sauber|kick|alfa romeo/i, "#52e252"],
+  [/renault/i, "#fff500"],
+  [/force india|racing point/i, "#f596c8"],
+  [/lotus/i, "#ffb800"],
+];
+function teamColor(name) {
+  const hit = TEAM_COLORS.find(([re]) => re.test(name || ""));
+  return hit ? hit[1] : "#8a929e";
+}
+
+function esc(v) {
+  return String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+}
+
+// Position chip — podium gets a filled colored badge.
+function posCell(v) {
+  const r = String(v ?? "").trim();
+  const podium = ["1", "2", "3"].includes(r) ? ` pos-badge-${r}` : "";
+  return `<span class="pos-badge${podium}">${esc(r)}</span>`;
+}
+
+// Team name with a color dot.
+function teamCell(v) {
+  return (
+    `<span class="team"><span class="team-dot" style="background:${teamColor(v)}"></span>` +
+    `${esc(v)}</span>`
+  );
+}
+
+// Status pill — "Finished" is solid red, anything else (lapped, DNF,
+// accident…) is an outline pill.
+function statusCell(v) {
+  const s = String(v ?? "").trim();
+  if (!s) return "";
+  const finished = /^finished/i.test(s);
+  const label = /\+\d+\s*lap/i.test(s) ? "Lapped" : s;
+  return `<span class="pill ${finished ? "pill-done" : "pill-out"}">${esc(label)}</span>`;
+}
+
+// Per-column cell formatters (return HTML). Columns not listed are
+// plain escaped text. Harmless for tables lacking these columns.
+const CELL_FORMATTERS = {
+  Pos: posCell,
+  Constructor: teamCell,
+  Team: teamCell,
+  Status: statusCell,
+};
+
 function table(rows, columns) {
   if (!rows || rows.length === 0) return null;
   const cols = columns || Object.keys(rows[0]);
-  // Podium highlighting only when the first column is a finishing position.
   const rankCol = cols[0] === "Pos" ? "Pos" : null;
   const t = document.createElement("table");
   t.innerHTML =
     "<thead><tr>" +
-    cols.map((c) => `<th>${c}</th>`).join("") +
+    cols.map((c) => `<th>${esc(c)}</th>`).join("") +
     "</tr></thead><tbody>" +
     rows
       .map((r) => {
         const rank = rankCol ? String(r[rankCol]).trim() : "";
         const cls = ["1", "2", "3"].includes(rank) ? ` class="pos-${rank}"` : "";
-        return (
-          `<tr${cls}>` +
-          cols.map((c) => `<td>${r[c] ?? ""}</td>`).join("") +
-          "</tr>"
-        );
+        const cells = cols
+          .map((c) => {
+            const fmt = CELL_FORMATTERS[c];
+            const html = fmt ? fmt(r[c]) : esc(r[c]);
+            return `<td class="col-${c.replace(/[^a-z]/gi, "")}">${html}</td>`;
+          })
+          .join("");
+        return `<tr${cls}>${cells}</tr>`;
       })
       .join("") +
     "</tbody>";
@@ -250,7 +312,7 @@ function buildTabs() {
   tabsNav.innerHTML = "";
   tabs.forEach((t) => {
     const b = document.createElement("button");
-    b.textContent = t.label;
+    b.innerHTML = `<span class="tab-icon">${t.icon || ""}</span>${t.label}`;
     b.className = t.id === activeTab ? "active" : "";
     b.onclick = () => {
       activeTab = t.id;
@@ -289,8 +351,9 @@ function selectRound() {
   $("hero-kicker").textContent =
     `${seasonSel.value} season · Round ${current.round}${current.country ? " · " + current.country : ""}`;
   $("race-title").textContent = current.raceName;
-  $("race-meta").textContent =
-    `${current.circuitName} — ${current.locality}, ${current.country} · ${current.date}`;
+  $("race-meta").innerHTML =
+    `<span class="meta-row"><span class="meta-ico">📍</span>${esc(current.circuitName)} — ${esc(current.locality)}, ${esc(current.country)}</span>` +
+    `<span class="meta-row"><span class="meta-ico">📅</span>${esc(current.date)}</span>`;
   buildTabs();
   showTab();
 }
