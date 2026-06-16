@@ -273,14 +273,17 @@ function renderLapData(data) {
       spanGaps: true,
     }));
 
+    const chartBox = document.createElement("div");
+    chartBox.className = "chart-box";
     const canvas = document.createElement("canvas");
-    canvas.height = 120;
-    panel.append(canvas);
+    chartBox.append(canvas);
+    panel.append(chartBox);
     lapChart = new Chart(canvas, {
       type: "line",
       data: { labels: laps, datasets },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         interaction: { mode: "nearest", intersect: false },
         scales: { x: { title: { display: true, text: "Lap" } } },
         plugins: { legend: { labels: { boxWidth: 12 } } },

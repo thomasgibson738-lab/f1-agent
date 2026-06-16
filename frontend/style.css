@@ -238,12 +238,20 @@ main { flex: 1; padding: 0 28px 28px; }
 /* ---------- Panel & cards ---------- */
 .panel { display: flex; flex-direction: column; gap: 18px; }
 .panel > table,
-.panel canvas {
+.panel .chart-box {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: var(--shadow);
 }
+
+/* Lap-time chart: a tall, responsive-width container the chart fills. */
+.chart-box {
+  position: relative;
+  height: clamp(360px, 56vh, 620px);
+  padding: 16px 18px;
+}
+.chart-box canvas { width: 100% !important; height: 100% !important; }
 
 /* ---------- Tables ---------- */
 table {
@@ -372,7 +380,7 @@ h3 {
   color: var(--muted);
   margin: 4px 0 -4px;
 }
-canvas { max-width: 100%; padding: 14px; }
+canvas { max-width: 100%; }
 
 .info {
   color: var(--muted);
