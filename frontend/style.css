@@ -172,8 +172,8 @@ body {
      photo, then a solid fallback. If assets/hero-car.jpg is absent the
      photo layer simply 404s and the red graphic shows through. */
   background:
-    linear-gradient(100deg, var(--surface) 0%, rgba(255,255,255,0) 30%),
-    linear-gradient(255deg, rgba(225,6,0,0.55) 0%, rgba(179,5,0,0.35) 50%, transparent 90%),
+    linear-gradient(100deg, var(--surface) 0%, rgba(255,255,255,0.85) 12%, rgba(255,255,255,0) 40%),
+    linear-gradient(255deg, rgba(225,6,0,0.20) 0%, transparent 55%),
     url("assets/hero-car.jpg"),
     linear-gradient(255deg, var(--red) 0%, var(--red-dark) 55%, var(--surface-2) 92%);
   background-size: cover, cover, cover, cover;
