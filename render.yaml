@@ -16,3 +16,6 @@ services:
       # the secret out of git — Render prompts for it on first deploy.
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Voyage embeds the search query at runtime for the regulations RAG.
+      - key: VOYAGE_API_KEY
+        sync: false

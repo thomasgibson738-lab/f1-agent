@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 import jolpica as j
 import laps as lp
 import news as nw
+import search_regs as regs
 
 # Load .env from the project root regardless of the process CWD.
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -41,15 +42,24 @@ def _get_client() -> anthropic.Anthropic:
 
 SYSTEM = """You are an F1 assistant embedded in a personal Formula 1 web app.
 You answer questions about race results, qualifying, sprints, championship
-standings, lap times, and the latest F1 news.
+standings, lap times, the latest F1 news, and the FIA regulations.
 
 Use the provided tools to look up real data rather than answering from memory —
 your training data may be stale and the user expects current, accurate figures.
 Rounds are numbered within a season; if you only know a Grand Prix by name,
 call get_schedule to find its round number first. Lap-time data is only
-available from 2018 onward. Be concise and conversational; format results as
-short tables or lists when helpful. If a tool returns no data, say so plainly
-rather than inventing an answer."""
+available from 2018 onward.
+
+For any question about the rules — technical specs, sporting procedures,
+penalties, car dimensions, weights, etc. — call search_regulations and base
+your answer on the retrieved text. The corpus is the 2026 FIA F1 Sporting and
+Technical Regulations. Cite the source document and page number for regulation
+answers (e.g. "Technical Regulations, p.42"), and don't state a specific rule
+value unless it appears in the retrieved chunks.
+
+Be concise and conversational; format results as short tables or lists when
+helpful. If a tool returns no data, say so plainly rather than inventing an
+answer."""
 
 TOOLS: list[dict] = [
     {
@@ -146,6 +156,25 @@ TOOLS: list[dict] = [
             "properties": {
                 "limit": {"type": "integer", "description": "Max headlines (default 15)"}
             },
+        },
+    },
+    {
+        "name": "search_regulations",
+        "description": "Semantic search over the 2026 FIA F1 Sporting and "
+        "Technical Regulations. Use for any rules question (car weight, "
+        "dimensions, power unit, penalties, parc fermé, track limits, etc.). "
+        "Returns the most relevant regulation passages with source document and "
+        "page number for citation.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural-language description of the rule to find.",
+                },
+                "k": {"type": "integer", "description": "Number of passages (default 5)"},
+            },
+            "required": ["query"],
         },
     },
 ]
@@ -253,6 +282,16 @@ def _run_tool(name: str, args: dict) -> Any:
         return _lap_summary(args["year"], args["round"], args["session_group"])
     if name == "get_latest_news":
         return nw.get_news(limit=args.get("limit", 15))["items"]
+    if name == "search_regulations":
+        hits = regs.search_regulations(args["query"], k=args.get("k", 5))
+        return [
+            {
+                "source": h.get("source", ""),
+                "page": h.get("page", ""),
+                "text": h.get("text", ""),
+            }
+            for h in hits
+        ]
     return {"error": f"Unknown tool {name}"}
 
 
