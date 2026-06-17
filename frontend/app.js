@@ -464,20 +464,83 @@ function newsCard(it) {
   return a;
 }
 
+// --- Chat page ---------------------------------------------------------
+const chatHistory = []; // [{role, content}] text turns sent to the API
+let chatBusy = false;
+
+function chatBubble(role, text) {
+  const el = document.createElement("div");
+  el.className = `chat-msg chat-${role}`;
+  el.textContent = text;
+  $("chat-log").append(el);
+  $("chat-log").scrollTop = $("chat-log").scrollHeight;
+  return el;
+}
+
+async function sendChat(text) {
+  if (chatBusy || !text.trim()) return;
+  chatBusy = true;
+  $("chat-send").disabled = true;
+  chatBubble("user", text);
+  chatHistory.push({ role: "user", content: text });
+
+  const pending = chatBubble("assistant", "…");
+  pending.classList.add("chat-pending");
+  try {
+    const res = await fetch(`${API_BASE}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: chatHistory }),
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const data = await res.json();
+    pending.classList.remove("chat-pending");
+    pending.textContent = data.reply;
+    chatHistory.push({ role: "assistant", content: data.reply });
+  } catch (e) {
+    pending.classList.remove("chat-pending");
+    pending.classList.add("chat-error");
+    pending.textContent = `Couldn't get an answer: ${e.message}`;
+  } finally {
+    chatBusy = false;
+    $("chat-send").disabled = false;
+    $("chat-text").focus();
+  }
+}
+
+let chatGreeted = false;
+function initChat() {
+  if (chatGreeted) return;
+  chatGreeted = true;
+  chatBubble(
+    "assistant",
+    "Hi! Ask me anything about F1 — race results, qualifying, championship standings, lap times, or the latest news."
+  );
+}
+
 // --- top-level page switching -----------------------------------------
 function showPage(page) {
   $("page-results").hidden = page !== "results";
   $("page-news").hidden = page !== "news";
+  $("page-chat").hidden = page !== "chat";
   // Season/round controls only make sense on the results page.
   $("results-controls").style.display = page === "results" ? "" : "none";
   document
     .querySelectorAll("#pagenav button")
     .forEach((b) => b.classList.toggle("active", b.dataset.page === page));
   if (page === "news") loadNews();
+  if (page === "chat") initChat();
 }
 
 document.querySelectorAll("#pagenav button").forEach((b) => {
   b.addEventListener("click", () => showPage(b.dataset.page));
+});
+
+$("chat-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = $("chat-text").value;
+  $("chat-text").value = "";
+  sendChat(text);
 });
 
 seasonSel.addEventListener("change", () => loadSeason(seasonSel.value));

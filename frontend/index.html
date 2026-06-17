@@ -25,6 +25,7 @@
     <nav class="pagenav" id="pagenav">
       <button data-page="results" class="active">Results</button>
       <button data-page="news">News</button>
+      <button data-page="chat">Ask AI</button>
     </nav>
 
     <!-- Inline season / round selectors (broadcast-style control strip) -->
@@ -71,6 +72,33 @@
     </section>
     <main>
       <section id="news-list" class="news-list"></section>
+    </main>
+  </div>
+
+  <!-- ===== Chat page ===== -->
+  <div id="page-chat" hidden>
+    <section class="hero">
+      <div class="hero-accent"></div>
+      <div class="hero-body">
+        <p class="hero-kicker">Ask AI</p>
+        <h1>F1 Assistant</h1>
+        <p class="hero-meta">Ask about results, standings, lap times, or the latest news.</p>
+      </div>
+      <div class="hero-visual" aria-hidden="true"></div>
+    </section>
+    <main>
+      <div class="chat">
+        <div id="chat-log" class="chat-log"></div>
+        <form id="chat-form" class="chat-input">
+          <input
+            id="chat-text"
+            type="text"
+            autocomplete="off"
+            placeholder="e.g. Who won the 2024 Monaco GP? How do the standings look?"
+          />
+          <button type="submit" id="chat-send">Send</button>
+        </form>
+      </div>
     </main>
   </div>
 

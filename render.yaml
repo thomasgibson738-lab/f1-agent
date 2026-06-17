@@ -11,3 +11,8 @@ services:
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     autoDeploy: true
     healthCheckPath: /api/health
+    envVars:
+      # Set this in the Render dashboard (Environment tab). sync:false keeps
+      # the secret out of git — Render prompts for it on first deploy.
+      - key: ANTHROPIC_API_KEY
+        sync: false

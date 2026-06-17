@@ -17,6 +17,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # The agent logic lives in src/ and imports its siblings flatly
 # (e.g. `import jolpica`), so put src/ on the path.
@@ -71,6 +72,31 @@ def news(limit: int = 40) -> dict:
     """Latest F1 news digest. Refreshes lazily when the cache is stale,
     so it's fresh each morning the page is opened."""
     return nw.get_news(limit=limit)
+
+
+class ChatMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+
+
+@app.post("/api/chat")
+def chat(req: ChatRequest) -> dict:
+    """Claude-powered F1 Q&A with tool use over the project's data."""
+    # Imported lazily so a missing ANTHROPIC_API_KEY only affects this route.
+    import chat as agent  # noqa: PLC0415
+
+    history = [{"role": m.role, "content": m.content} for m in req.messages]
+    if not history or history[-1]["role"] != "user":
+        raise HTTPException(400, "Last message must be from the user.")
+    try:
+        reply = agent.answer(history)
+    except Exception as e:
+        raise HTTPException(502, f"Chat agent error: {e}")
+    return {"reply": reply}
 
 
 @app.get("/api/seasons")
