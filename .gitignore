@@ -20,6 +20,12 @@ data/news/*.json
 # FIA regulation PDFs (not used by the deployed app yet; re-add when RAG ships)
 data/regs/*.pdf
 
+# Backfill run logs (regenerable; the scripts are committed, the logs are not)
+backfill.log
+backfill_err.log
+backfill_console.log
+backfill_loop.log
+
 # OS / editor junk
 .DS_Store
 Thumbs.db
